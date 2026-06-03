@@ -529,17 +529,19 @@ body {
     </div>
 </div>
 
-    <div id="auth-page" class="hidden">
+    <div id="auth-page">
     <div class="auth-card">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 70px; height: 70px; background: #2563eb; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 8px 15px rgba(37,99,235,0.3);">
-                <i class="fas fa-warehouse"></i>
-            </div>
-        </div>
+      <span onclick="kembaliBukaToko()" style="font-size: 40px; cursor: pointer; position: absolute; right: 20px; top: 10px;">&times;</span>
+
+        <div style="text-align: center; margin-top:10px">
+    <div>
+        <img src="iconApps512.png" style="width: 70%; height: 70%; object-fit: cover; border-radius: 50%;">
+    </div>
+</div>
 
         <h1 style="text-align:center; color:#1e3a8a; font-weight: 1000;">TOKO BAROKAH</h1>
-        <p id="auth-subtitle" style="text-align:center; color:#444; margin-bottom:5px; font-size:14px; font-weight: 400; font-style: italic;">Sedia:</p>
-        <p id="auth-subtitle" style="text-align:center; color:#444; margin-bottom:35px; font-size:14px; font-weight: 400; font-style: italic;">Bahan bangunan, Alat sepeda, Alat listrik</p>
+        <p id="auth-subtitle" style="text-align:center; color:#444; margin-bottom:5px; font-size:10px; font-weight: 400; font-style: italic;">Sedia:</p>
+        <p id="auth-subtitle" style="text-align:center; color:#444; margin-bottom:35px; font-size:10px; font-weight: 400; font-style: italic;">Bahan bangunan, Alat sepeda, Alat listrik, Alat pancing</p>
         
         <form id="auth-form">
             <input type="email" id="email" placeholder="Email" required>
@@ -566,7 +568,7 @@ body {
           
           <div id="coin-header-display" style="display: flex; align-items: center; gap: 5px; background: rgba(255, 255, 0, 0.2); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 0.1px solid #facc15; color: #facc15;">
         <i class="fas fa-coins"></i>
-        <span id="user-coins"></span>
+        <span id="user-coins">0</span>
     </div>
     
     <h1 style="padding-right: 20px; font-size: 25px;">TOKO BAROKAH</h1>
@@ -622,7 +624,7 @@ body {
         <main id="page-keranjang" class="page">
             <div id="cart-list"></div>
             <div id="cart-footer" class="hidden" style="margin-top: 20px;">
-                <button class="btn-primary" onclick="checkout()">Pesan Sekarang</button>
+                <button class="btn-primary" onclick="if(!proteksiGuest()) {checkout()}">Pesan Sekarang</button>
             </div>
         </main>
 
@@ -651,7 +653,7 @@ body {
     pastikan penanda pada peta sudah sesuai dengan lokasi rumah Anda agar pengiriman lebih akurat.</p>
     
     <div id="map"></div>
-    <button onclick="getCurrentLocation()" class="btn-primary" style="background:#059669; margin-top:10px; margin-bottom: 25px;">
+    <button onclick="if(!proteksiGuest()) {getCurrentLocation()}" class="btn-primary" style="background:#059669; margin-top:10px; margin-bottom: 25px;">
     <i class="fas fa-location-arrow"></i> Deteksi Lokasi (GPS)
 </button>
 
@@ -669,7 +671,7 @@ body {
 </div>
 <input type="text" id="addr-prov" placeholder="Provinsi">
 
-                    <button class="btn-primary" onclick="saveAddress()" style="background:#2563eb; font-size:13px; padding:8px;">Simpan Alamat</button>
+                    <button class="btn-primary" onclick="if(!proteksiGuest()) {saveAddress() }" style="background:#2563eb; font-size:13px; padding:8px;">Simpan Alamat</button>
                 </div>
                 
                 <div class="operational-trigger" onclick="showOperationalHours()">
@@ -677,12 +679,12 @@ body {
     <i class="fas fa-chevron-right" style="color: #cbd5e1;"></i>
 </div>
 
-                <div class="operational-trigger" onclick="showStoreAddress()">
+                <div class="operational-trigger" onclick="if(!proteksiGuest()) {showStoreAddress()}">
     <span><i class="fas fa-map-marked-alt" style="color: #2563eb; margin-right: 10px;"></i> Alamat Toko</span>
     <i class="fas fa-chevron-right" style="color: #cbd5e1;"></i>
 </div>
 
-<div class="operational-trigger" onclick="showContactUs()">
+<div class="operational-trigger" onclick="if(!proteksiGuest()) {showContactUs()}">
     <span><i class="fas fa-headset" style="color: #2563eb; margin-right: 10px;"></i> Hubungi Kami</span>
     <i class="fas fa-chevron-right" style="color: #cbd5e1;"></i>
 </div>
@@ -791,33 +793,41 @@ body {
     let bannerInterval = null;
     let bannerImagesCount = 0;
     
-    window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('tokbar_user_session');
+    
     if (savedUser) {
+        // JIKA SUDAH LOGIN: Otomatis masuk, muat semua data pribadi
         const userObj = JSON.parse(savedUser);
-        // Set data global atau elemen UI yang membutuhkan email user
         document.getElementById('user-display').innerText = userObj.email;
         if(document.getElementById('addr-email-hidden')) {
            document.getElementById('addr-email-hidden').value = userObj.email;
         }
         
-        // Langsung arahkan masuk ke aplikasi utama tanpa melihat form login lagi
+        // Sembunyikan form login, tampilkan aplikasi utama
         document.getElementById('auth-page').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         
-        if (typeof loadBannerData === "function" && typeof loadProducts === "function"
-          && typeof fetchUserCoins === "function"
-          && typeof syncOrders === "function"
-          && typeof loadAddress === "function"
-          && typeof loadChatHistory === "function") {
-            loadBannerData();
-            loadProducts(); 
-            fetchUserCoins();
-            syncOrders();
-            loadAddress();
-            loadChatHistory();
-        }
+        // Jalankan semua fungsi loading data internal
+        if (typeof loadBannerData === "function") loadBannerData();
+        if (typeof loadProducts === "function") loadProducts(); 
+        if (typeof fetchUserCoins === "function") fetchUserCoins();
+        if (typeof syncOrders === "function") syncOrders();
+        if (typeof loadAddress === "function") loadAddress();
+        if (typeof loadChatHistory === "function") loadChatHistory();
+    } else {
+        // JIKA BELUM LOGIN (GUEST/TAMU):
+        // Sembunyikan halaman auth/login di awal, langsung buka aplikasi utama
+        document.getElementById('auth-page').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('user-display').innerText = "Guest (Tamu)";
+        
+        // Guest hanya boleh memuat data publik (Banner & Produk)
+        if (typeof loadBannerData === "function") loadBannerData();
+        if (typeof loadProducts === "function") loadProducts(); 
     }
+    
+    updateCopyrightYear();
 });
 
     // FUNGSI STATUS PESANAN
@@ -839,6 +849,23 @@ body {
         `;
     }
 
+function proteksiGuest() {
+    const savedUser = localStorage.getItem('tokbar_user_session');
+    if (!savedUser) {
+        alert("Silakan masuk atau daftar terlebih dahulu untuk mengakses semua fitur di aplikasi!");
+        // Tampilkan halaman form login/register
+        document.getElementById('auth-page').classList.remove('hidden');
+        // Sembunyikan aplikasi utama agar fokus login
+        document.getElementById('main-app').classList.add('hidden');
+        return true; // Berarti terproteksi (User adalah Guest)
+    }
+    return false; // Berarti aman (User sudah login)
+}
+
+function kembaliBukaToko() {
+    document.getElementById('auth-page').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+}
 
     function saveAddress() {
     const addr = {
@@ -2034,7 +2061,7 @@ function showOperationalHours() {
     document.getElementById('detail-body').innerHTML = `
         <div style="text-align: center; margin-bottom: 15px;">
             <i class="fas fa-store" style="font-size: 40px; color: #2563eb;"></i>
-            <h3 style="margin-top: 10px;">Jam Operasional</h3>
+            <h3 style="margin-top: 10px;">Jam Operasional Toko</h3>
         </div>
         
         <ul class="op-list">
@@ -2046,8 +2073,6 @@ function showOperationalHours() {
             <strong>Penting:</strong><br>
             Toko Tutup Sementara Di Waktu Ibadah. Jika Pesanan Melebihi Jam Operasional Akan Diproses Di Hari Berikutnya.
         </div>
-        
-        <button class="btn-primary" onclick="closeModal()" style="background: #64748b; margin-top: 20px;">Tutup</button>
     `;
     
     document.getElementById('detail-modal').classList.remove('hidden');
@@ -2082,8 +2107,6 @@ function showStoreAddress() {
                 <i class="fas fa-map-signs"></i> Maps (Petunjuk Arah)
             </button>
         </a>
-        
-        <button class="btn-primary" onclick="closeModal()" style="background: #64748b;">Tutup</button>
     `;
     
     document.getElementById('detail-modal').classList.remove('hidden');
@@ -2131,6 +2154,7 @@ let chatInterval = null;
 let currentChatId = localStorage.getItem('user_chat_id') || "";
 
 function openChatModal() {
+  if (proteksiGuest()) return; 
     document.getElementById('chat-modal').classList.remove('hidden');
     document.getElementById('badge-chat').classList.add('hidden'); // Sembunyikan notif saat dibuka
     loadChatHistory();
@@ -2274,8 +2298,7 @@ async function showPrivacyPolicy() {
 
     document.getElementById('detail-body').innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <i class="fas fa-spinner fa-spin" style="font-size: 30px; color: #2563eb;"></i>
-            <p style="margin-top: 10px; color: #64748b; font-size: 14px;">Mohon Tunggu</p>
+            <p class="fas fa-spinner fa-spin" style="font-size: 30px; color: #2563eb; margin-bottom: 15px;"></p>
         </div>
     `;
     document.getElementById('detail-modal').classList.remove('hidden');
@@ -2315,13 +2338,11 @@ async function showPrivacyPolicy() {
         } else {
             document.getElementById('detail-body').innerHTML = `
                 <p style="text-align:center; padding: 20px; color:#64748b; font-size: 14px;">Belum ada data.</p>
-                <button class="btn-primary" onclick="closeModal()">Tutup</button>
             `;
         }
     } catch (err) {
         document.getElementById('detail-body').innerHTML = `
-            <p style="text-align:center; padding: 20px; color:#e11d48; font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> Gagal memuat data. Periksa koneksi internet Anda.</p>
-            <button class="btn-primary" onclick="closeModal()" style="background:#64748b;">Tutup</button>
+            <p style="text-align:center; padding: 20px; color:#e11d48; font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> Gagal memuat. Periksa koneksi internet Anda.</p>
         `;
     }
 }
@@ -2409,7 +2430,7 @@ async function loadBannerData() {
                         slideElement.target = "_blank";
                     }
                     
-                    slideElement.innerHTML = `<img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/400x160?text=Promo+UD+Barokah'">`;
+                    slideElement.innerHTML = `<img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/400x160?text=Promo+Toko+Barokah'">`;
                     sliderWrapper.appendChild(slideElement);
 
                     // Render Titik Bulat Indikator (Jika gambar lebih dari satu)
